@@ -1,0 +1,35 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/welcome_background" android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingBottom="32dp">
+        <FrameLayout android:layout_width="match_parent" android:layout_height="220dp" android:background="@drawable/header_background">
+            <ImageView android:layout_width="170dp" android:layout_height="170dp" android:layout_gravity="end|top" android:layout_marginTop="40dp" android:layout_marginEnd="-30dp" android:alpha="0.12" android:importantForAccessibility="no" android:src="@drawable/ic_basket"/>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_gravity="bottom" android:orientation="vertical" android:paddingHorizontal="24dp" android:paddingBottom="72dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Create account" android:textColor="@color/white" android:textSize="30sp" android:textStyle="bold"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="Join us for fresh picks, every day" android:textColor="#E6FFFFFF" android:textSize="16sp"/>
+            </LinearLayout>
+        </FrameLayout>
+        <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginStart="24dp" android:layout_marginTop="-48dp" android:layout_marginEnd="24dp" app:cardBackgroundColor="@color/white" app:cardCornerRadius="20dp" app:cardElevation="8dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
+                <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilName" style="@style/Widget.GroceryApp.TextInputLayout" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="0dp" android:hint="Full name">
+                    <com.google.android.material.textfield.TextInputEditText android:id="@+id/etName" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textPersonName" android:textColor="@color/text_primary"/>
+                </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilAddress" style="@style/Widget.GroceryApp.TextInputLayout" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:hint="Address">
+                    <com.google.android.material.textfield.TextInputEditText android:id="@+id/etAddress" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textPostalAddress" android:textColor="@color/text_primary"/>
+                </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilPhone" style="@style/Widget.GroceryApp.TextInputLayout" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:hint="Phone number">
+                    <com.google.android.material.textfield.TextInputEditText android:id="@+id/etPhone" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="phone" android:textColor="@color/text_primary"/>
+                </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilEmail" style="@style/Widget.GroceryApp.TextInputLayout" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:hint="Email">
+                    <com.google.android.material.textfield.TextInputEditText android:id="@+id/etEmail" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textEmailAddress" android:textColor="@color/text_primary"/>
+                </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilPassword" style="@style/Widget.GroceryApp.TextInputLayout" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:hint="Password (min 6 characters)" app:endIconMode="password_toggle">
+                    <com.google.android.material.textfield.TextInputEditText android:id="@+id/etPassword" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textPassword" android:textColor="@color/text_primary"/>
+                </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilConfirm" style="@style/Widget.GroceryApp.TextInputLayout" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:hint="Confirm password" app:endIconMode="password_toggle">
+                    <com.google.android.material.textfield.TextInputEditText android:id="@+id/etConfirm" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textPassword" android:textColor="@color/text_primary"/>
+                </com.google.android.material.textfield.TextInputLayout>
+                <Button android:id="@+id/btnSignUp" style="@style/Widget.GroceryApp.Button" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="20dp" android:text="Sign up"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+        <TextView android:id="@+id/tvGoLogin" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center_horizontal" android:layout_marginTop="20dp" android:padding="8dp" android:text="Already have an account? Log in" android:textColor="@color/green_primary" android:textSize="14sp" android:textStyle="bold"/>
+    </LinearLayout>
+</ScrollView>

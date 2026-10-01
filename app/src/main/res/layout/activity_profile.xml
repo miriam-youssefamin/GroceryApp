@@ -1,0 +1,30 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/welcome_background" android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingBottom="32dp">
+        <FrameLayout android:layout_width="match_parent" android:layout_height="240dp" android:background="@drawable/header_background">
+            <ImageView android:layout_width="170dp" android:layout_height="170dp" android:layout_gravity="end|top" android:layout_marginTop="40dp" android:layout_marginEnd="-30dp" android:alpha="0.12" android:importantForAccessibility="no" android:src="@drawable/ic_basket"/>
+            <ImageView android:id="@+id/btnBack" android:layout_width="44dp" android:layout_height="44dp" android:layout_gravity="top|start" android:layout_marginStart="24dp" android:layout_marginTop="56dp" android:background="@drawable/avatar_background" android:clickable="true" android:contentDescription="Back" android:elevation="6dp" android:focusable="true" android:padding="11dp" android:src="@drawable/ic_arrow_back" android:tint="@color/green_dark"/>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_gravity="bottom" android:orientation="vertical" android:paddingHorizontal="24dp" android:paddingBottom="72dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="My profile" android:textColor="@color/white" android:textSize="28sp" android:textStyle="bold"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="Manage your account details" android:textColor="#E6FFFFFF" android:textSize="16sp"/>
+            </LinearLayout>
+        </FrameLayout>
+        <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginStart="24dp" android:layout_marginTop="-48dp" android:layout_marginEnd="24dp" app:cardBackgroundColor="@color/white" app:cardCornerRadius="20dp" app:cardElevation="8dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Email" android:textColor="@color/text_secondary" android:textSize="12sp"/>
+                <TextView android:id="@+id/tvEmail" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="2dp" android:textColor="@color/text_primary" android:textSize="16sp"/>
+                <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilName" style="@style/Widget.GroceryApp.TextInputLayout" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:hint="Full name">
+                    <com.google.android.material.textfield.TextInputEditText android:id="@+id/etName" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textPersonName" android:textColor="@color/text_primary"/>
+                </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilAddress" style="@style/Widget.GroceryApp.TextInputLayout" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:hint="Address">
+                    <com.google.android.material.textfield.TextInputEditText android:id="@+id/etAddress" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="textPostalAddress" android:textColor="@color/text_primary"/>
+                </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilPhone" style="@style/Widget.GroceryApp.TextInputLayout" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" android:hint="Phone number">
+                    <com.google.android.material.textfield.TextInputEditText android:id="@+id/etPhone" android:layout_width="match_parent" android:layout_height="wrap_content" android:inputType="phone" android:textColor="@color/text_primary"/>
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+        <Button android:id="@+id/btnSave" style="@style/Widget.GroceryApp.Button" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginStart="24dp" android:layout_marginTop="24dp" android:layout_marginEnd="24dp" android:text="Save changes"/>
+        <Button android:id="@+id/btnLogout" style="@style/Widget.GroceryApp.OutlinedButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginStart="24dp" android:layout_marginTop="12dp" android:layout_marginEnd="24dp" android:text="Log out"/>
+        <Button android:id="@+id/btnDelete" style="@style/Widget.GroceryApp.DangerButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginStart="24dp" android:layout_marginTop="12dp" android:layout_marginEnd="24dp" android:text="Delete account"/>
+    </LinearLayout>
+</ScrollView>
