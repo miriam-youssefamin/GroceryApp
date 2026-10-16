@@ -1,0 +1,5 @@
+# Copy this file to aws.properties (same folder) and fill in your team's S3 values.
+aws.accessKey=YOUR_ACCESS_KEY_ID
+aws.secretKey=YOUR_SECRET_ACCESS_KEY
+aws.bucket=your-bucket-name
+aws.region=eu-central-1

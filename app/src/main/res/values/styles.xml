@@ -23,4 +23,13 @@
         <item name="strokeColor">@color/danger</item>
         <item name="rippleColor">#33C62828</item>
     </style>
+
+    <style name="Widget.GroceryApp.Chip" parent="Widget.Material3.Chip.Filter">
+        <item name="chipBackgroundColor">@color/chip_bg</item>
+        <item name="android:textColor">@color/chip_text</item>
+        <item name="checkedIconVisible">false</item>
+        <item name="chipStrokeWidth">0dp</item>
+        <item name="chipCornerRadius">20dp</item>
+        <item name="android:textSize">14sp</item>
+    </style>
 </resources>

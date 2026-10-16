@@ -4,8 +4,8 @@
             <ImageView android:layout_width="170dp" android:layout_height="170dp" android:layout_gravity="end|top" android:layout_marginTop="40dp" android:layout_marginEnd="-30dp" android:alpha="0.12" android:importantForAccessibility="no" android:src="@drawable/ic_basket"/>
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_gravity="bottom" android:orientation="vertical" android:paddingHorizontal="24dp" android:paddingBottom="72dp">
                 <ImageView android:layout_width="56dp" android:layout_height="56dp" android:background="@drawable/avatar_background" android:importantForAccessibility="no" android:padding="14dp" android:src="@drawable/ic_basket" android:tint="@color/green_primary"/>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="Welcome back" android:textColor="@color/white" android:textSize="30sp" android:textStyle="bold"/>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="Log in to your account" android:textColor="#E6FFFFFF" android:textSize="16sp"/>
+                <TextView android:id="@+id/tvHeading" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="Welcome back" android:textColor="@color/white" android:textSize="30sp" android:textStyle="bold"/>
+                <TextView android:id="@+id/tvSubtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="Log in to your account" android:textColor="#E6FFFFFF" android:textSize="16sp"/>
             </LinearLayout>
         </FrameLayout>
         <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginStart="24dp" android:layout_marginTop="-48dp" android:layout_marginEnd="24dp" app:cardBackgroundColor="@color/white" app:cardCornerRadius="20dp" app:cardElevation="8dp">

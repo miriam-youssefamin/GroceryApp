@@ -13,16 +13,27 @@ class SignUpActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySignupBinding
     private val auth = FirebaseAuth.getInstance()
+    private lateinit var role: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySignupBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        role = intent.getStringExtra(Roles.EXTRA_ROLE) ?: Roles.BUYER
         listOf(
             binding.tilName, binding.tilAddress, binding.tilPhone,
             binding.tilEmail, binding.tilPassword, binding.tilConfirm
         ).forEach { it.clearErrorOnType() }
+
+        if (role == Roles.SELLER) {
+            binding.tvHeading.text = "Create seller account"
+            binding.tvSubtitle.text = "Start listing your products"
+            binding.tilName.hint = "Shop name"
+            binding.tilAddress.hint = "Shop address"
+        } else {
+            binding.tvHeading.text = "Create buyer account"
+        }
 
         binding.btnSignUp.setOnClickListener { signUp() }
         binding.tvGoLogin.setOnClickListener { finish() }
@@ -37,8 +48,8 @@ class SignUpActivity : AppCompatActivity() {
         val confirm = binding.etConfirm.text.toString()
 
         when {
-            name.isEmpty() -> binding.tilName.error = "Enter your name"
-            address.isEmpty() -> binding.tilAddress.error = "Enter your address"
+            name.isEmpty() -> binding.tilName.error = "This field is required"
+            address.isEmpty() -> binding.tilAddress.error = "This field is required"
             phone.length !in 11..12 -> binding.tilPhone.error = "Phone number must be 11 or 12 digits"
             !phone.all { it.isDigit() } -> binding.tilPhone.error = "Phone number must contain digits only"
             !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> binding.tilEmail.error = "Enter a valid email"
@@ -53,11 +64,13 @@ class SignUpActivity : AppCompatActivity() {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnSuccessListener { result ->
                 val uid = result.user!!.uid
+                val profile = UserProfile(role = role, name = name, email = email, address = address, phone = phone)
                 FirebaseDatabase.getInstance().getReference("users").child(uid)
-                    .setValue(UserProfile(name = name, email = email, address = address, phone = phone))
+                    .setValue(profile)
                     .addOnSuccessListener {
+                        val target = if (role == Roles.SELLER) SellerHomeActivity::class.java else BuyerHomeActivity::class.java
                         startActivity(
-                            Intent(this, WelcomeActivity::class.java)
+                            Intent(this, target)
                                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                         )
                     }

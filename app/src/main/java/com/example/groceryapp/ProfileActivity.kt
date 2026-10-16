@@ -2,7 +2,12 @@ package com.example.groceryapp
 
 import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.Bitmap
 import android.os.Bundle
+import android.net.Uri
+import android.view.View
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -23,6 +28,18 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProfileBinding
     private lateinit var userRef: DatabaseReference
 
+    /** A photo the user picked but hasn't saved yet; uploaded to S3 when they tap "Save changes". */
+    private var pendingPhoto: Uri? = null
+    private var shownPhotoUrl: String? = null
+
+    private val pickPhoto = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null) {
+            pendingPhoto = uri
+            ImageUtils.decodeBitmap(this, uri, 512)?.let { showPhoto(it) }
+                ?: Toast.makeText(this, "Couldn't open that image", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     // Fires once with the stored data, then again on every change (real-time).
     private val profileListener = object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
@@ -33,6 +50,13 @@ class ProfileActivity : AppCompatActivity() {
             binding.etName.setIfIdle(name)
             binding.etAddress.setIfIdle(address)
             binding.etPhone.setIfIdle(phone)
+
+            // Fetch the profile photo from S3 (only when the saved URL changed and nothing new is pending).
+            val photoUrl = snapshot.child("photoUrl").value?.toString() ?: ""
+            if (photoUrl != shownPhotoUrl && pendingPhoto == null) {
+                shownPhotoUrl = photoUrl
+                if (photoUrl.isBlank() || !S3Helper.isConfigured()) showPlaceholder() else loadPhoto(photoUrl)
+            }
         }
         override fun onCancelled(error: DatabaseError) {
             Toast.makeText(this@ProfileActivity, error.message, Toast.LENGTH_LONG).show()
@@ -56,6 +80,12 @@ class ProfileActivity : AppCompatActivity() {
 
         binding.tilName.clearErrorOnType()
 
+        val choosePhoto = View.OnClickListener {
+            pickPhoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        }
+        binding.ivPhoto.setOnClickListener(choosePhoto)
+        binding.btnChangePhoto.setOnClickListener(choosePhoto)
+
         binding.btnBack.setOnClickListener { finish() }
         binding.btnSave.setOnClickListener { saveProfile() }
         binding.btnLogout.setOnClickListener {
@@ -71,11 +101,39 @@ class ProfileActivity : AppCompatActivity() {
             binding.tilName.error = "Name cannot be empty"
             return
         }
-        val updates = mapOf(
+        val updates = mutableMapOf<String, Any>(
             "name" to name,
             "address" to binding.etAddress.text.toString().trim(),
             "phone" to binding.etPhone.text.toString().trim()
         )
+
+        val photo = pendingPhoto
+        if (photo == null) {
+            commitProfile(updates)
+            return
+        }
+
+        if (!S3Helper.isConfigured()) {
+            Toast.makeText(this, "AWS credentials are missing (fill in aws.properties)", Toast.LENGTH_LONG).show()
+            return
+        }
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        setPhotoBusy(true)
+        S3Helper.uploadProfilePhoto(this, photo, uid) { result ->
+            setPhotoBusy(false)
+            result.onSuccess { url ->
+                updates["photoUrl"] = url      // the S3 URL is what we keep in Firebase
+                pendingPhoto = null
+                shownPhotoUrl = url
+                commitProfile(updates)
+            }.onFailure {
+                commitProfile(updates)
+                Toast.makeText(this, "Details saved, but photo upload failed: ${it.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun commitProfile(updates: Map<String, Any>) {
         userRef.updateChildren(updates)
             .addOnSuccessListener {
                 currentFocus?.clearFocus()
@@ -84,6 +142,37 @@ class ProfileActivity : AppCompatActivity() {
             .addOnFailureListener {
                 Toast.makeText(this, it.message ?: "Update failed", Toast.LENGTH_LONG).show()
             }
+    }
+
+    // ---- Profile photo --------------------------------------------------------------------
+
+    private fun loadPhoto(url: String) {
+        binding.progressPhoto.visibility = View.VISIBLE
+        S3Helper.downloadImage(url) { result ->
+            if (isDestroyed) return@downloadImage
+            binding.progressPhoto.visibility = View.GONE
+            result.onSuccess { showPhoto(it) }
+                .onFailure { showPlaceholder() }
+        }
+    }
+
+    private fun showPhoto(bitmap: Bitmap) {
+        binding.ivPhoto.setPadding(0, 0, 0, 0)
+        binding.ivPhoto.imageTintList = null
+        binding.ivPhoto.setImageBitmap(bitmap)
+    }
+
+    private fun showPlaceholder() {
+        val pad = (26 * resources.displayMetrics.density).toInt()
+        binding.ivPhoto.setPadding(pad, pad, pad, pad)
+        binding.ivPhoto.imageTintList = android.content.res.ColorStateList.valueOf(getColor(R.color.green_primary))
+        binding.ivPhoto.setImageResource(R.drawable.ic_person)
+    }
+
+    private fun setPhotoBusy(busy: Boolean) {
+        binding.progressPhoto.visibility = if (busy) View.VISIBLE else View.GONE
+        binding.btnSave.isEnabled = !busy
+        binding.btnChangePhoto.isEnabled = !busy
     }
 
     // ---- Delete account -------------------------------------------------------------------
@@ -134,19 +223,19 @@ class ProfileActivity : AppCompatActivity() {
             .addOnSuccessListener {
                 // Stop listening first, otherwise the listener reports a permission error once we're signed out.
                 userRef.removeEventListener(profileListener)
-                userRef.removeValue()
-                    .addOnSuccessListener {
-                        user.delete()
-                            .addOnSuccessListener {
-                                Toast.makeText(this, "Account deleted", Toast.LENGTH_SHORT).show()
-                                goToLogin()
-                            }
-                            .addOnFailureListener { failDelete(it.message ?: "Couldn't delete your account") }
-                    }
-                    .addOnFailureListener {
+                removeUserData(user.uid) { error ->
+                    if (error != null) {
                         userRef.addValueEventListener(profileListener)
-                        failDelete(it.message ?: "Couldn't delete your data")
+                        failDelete(error)
+                        return@removeUserData
                     }
+                    user.delete()
+                        .addOnSuccessListener {
+                            Toast.makeText(this, "Account deleted", Toast.LENGTH_SHORT).show()
+                            goToLogin()
+                        }
+                        .addOnFailureListener { failDelete(it.message ?: "Couldn't delete your account") }
+                }
             }
             .addOnFailureListener {
                 failDelete(
@@ -154,6 +243,33 @@ class ProfileActivity : AppCompatActivity() {
                     else it.message ?: "Couldn't verify your password"
                 )
             }
+    }
+
+    /**
+     * Deletes users/{uid} together with any products the user listed as a seller, in one atomic update.
+     * If the products lookup fails, falls back to deleting only the user node.
+     */
+    private fun removeUserData(uid: String, done: (error: String?) -> Unit) {
+        val db = FirebaseDatabase.getInstance()
+        fun commit(updates: Map<String, Any?>) {
+            db.reference.updateChildren(updates)
+                .addOnSuccessListener { done(null) }
+                .addOnFailureListener { done(it.message ?: "Couldn't delete your data") }
+        }
+        db.getReference("products").orderByChild("sellerId").equalTo(uid)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val updates = HashMap<String, Any?>()
+                    snapshot.children.forEach { updates["products/${it.key}"] = null }
+                    updates["users/$uid"] = null
+                    updates["shops/$uid"] = null
+                    commit(updates)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    commit(mapOf("users/$uid" to null, "shops/$uid" to null))
+                }
+            })
     }
 
     private fun failDelete(message: String) {
@@ -177,7 +293,7 @@ class ProfileActivity : AppCompatActivity() {
 
     private fun goToLogin() {
         startActivity(
-            Intent(this, LoginActivity::class.java)
+            Intent(this, RoleSelectionActivity::class.java)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         )
     }

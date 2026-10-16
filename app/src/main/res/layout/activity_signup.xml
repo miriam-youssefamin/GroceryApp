@@ -3,8 +3,8 @@
         <FrameLayout android:layout_width="match_parent" android:layout_height="220dp" android:background="@drawable/header_background">
             <ImageView android:layout_width="170dp" android:layout_height="170dp" android:layout_gravity="end|top" android:layout_marginTop="40dp" android:layout_marginEnd="-30dp" android:alpha="0.12" android:importantForAccessibility="no" android:src="@drawable/ic_basket"/>
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_gravity="bottom" android:orientation="vertical" android:paddingHorizontal="24dp" android:paddingBottom="72dp">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Create account" android:textColor="@color/white" android:textSize="30sp" android:textStyle="bold"/>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="Join us for fresh picks, every day" android:textColor="#E6FFFFFF" android:textSize="16sp"/>
+                <TextView android:id="@+id/tvHeading" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Create account" android:textColor="@color/white" android:textSize="30sp" android:textStyle="bold"/>
+                <TextView android:id="@+id/tvSubtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="Order anything, delivered to your door" android:textColor="#E6FFFFFF" android:textSize="16sp"/>
             </LinearLayout>
         </FrameLayout>
         <com.google.android.material.card.MaterialCardView android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginStart="24dp" android:layout_marginTop="-48dp" android:layout_marginEnd="24dp" app:cardBackgroundColor="@color/white" app:cardCornerRadius="20dp" app:cardElevation="8dp">
