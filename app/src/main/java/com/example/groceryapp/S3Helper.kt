@@ -44,17 +44,17 @@ object S3Helper {
     fun keyFromUrl(url: String): String? = url.substringAfter(".amazonaws.com/", "").takeIf { it.isNotEmpty() }
 
     /**
-     * Compresses the picked photo (< 0.5 MB) and uploads it as profile_photos/{uid}/{timestamp}.jpg.
+     * Compresses the picked photo (< 0.5 MB) and uploads it as {folder}/{timestamp}.jpg.
      * A new key per upload means the bucket keeps both the first and the updated photo.
      * Delivers the S3 URL on success.
      */
-    fun uploadProfilePhoto(context: Context, uri: Uri, uid: String, onResult: (Result<String>) -> Unit) {
+    fun uploadImage(context: Context, uri: Uri, folder: String, onResult: (Result<String>) -> Unit) {
         val appContext = context.applicationContext
         executor.execute {
             val result = runCatching {
                 val file = ImageUtils.compressForUpload(appContext, uri)
                 try {
-                    val key = "profile_photos/$uid/${System.currentTimeMillis()}.jpg"
+                    val key = "$folder/${System.currentTimeMillis()}.jpg"
                     val request = PutObjectRequest(BuildConfig.AWS_BUCKET, key, file).apply {
                         metadata = ObjectMetadata().apply { contentType = "image/jpeg" }
                     }
@@ -66,6 +66,24 @@ object S3Helper {
             }
             mainHandler.post { onResult(result) }
         }
+    }
+
+    /** Profile photo: profile_photos/{uid}/{timestamp}.jpg */
+    fun uploadProfilePhoto(context: Context, uri: Uri, uid: String, onResult: (Result<String>) -> Unit) =
+        uploadImage(context, uri, "profile_photos/$uid", onResult)
+
+    /** Product photo (camera or gallery): product_photos/{sellerUid}/{timestamp}.jpg */
+    fun uploadProductPhoto(context: Context, uri: Uri, sellerUid: String, onResult: (Result<String>) -> Unit) =
+        uploadImage(context, uri, "product_photos/$sellerUid", onResult)
+
+    /**
+     * Best-effort delete of the object behind an S3 URL (used when a product photo is replaced or the
+     * product is removed, so the bucket does not fill up with orphaned images). Failures are ignored.
+     */
+    fun deleteObject(url: String) {
+        val key = keyFromUrl(url) ?: return
+        if (!isConfigured()) return
+        executor.execute { runCatching { client.deleteObject(BuildConfig.AWS_BUCKET, key) } }
     }
 
     /**

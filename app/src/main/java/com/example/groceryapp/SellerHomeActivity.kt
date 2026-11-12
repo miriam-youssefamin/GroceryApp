@@ -2,53 +2,47 @@ package com.example.groceryapp
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import com.example.groceryapp.databinding.ActivitySellerHomeBinding
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.Query
 import com.google.firebase.database.ValueEventListener
 
+/**
+ * Seller home: hosts the seller fragments behind a bottom navigation bar.
+ *
+ *  - Products tab -> [SellerProductsFragment] (grid of the seller's items); Edit opens [AddEditProductFragment]
+ *  - Add tab      -> [AddEditProductFragment] (new item, with camera/gallery photo uploaded to S3)
+ *  - Orders tab   -> [SellerOrdersFragment] (incoming orders, accept / reject); its icon shows a badge
+ *                    with the number of orders still waiting for approval
+ *  - Profile tab  -> opens [ProfileActivity]
+ *
+ * It also keeps the public shop record shops/{uid} in sync with the seller's account.
+ */
 class SellerHomeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySellerHomeBinding
-    private lateinit var adapter: SellerProductAdapter
-    private val productsRef = FirebaseDatabase.getInstance().getReference("products")
-    private var productsQuery: Query? = null
-    private var shopRef: DatabaseReference? = null
+    private var ordersQuery: Query? = null
 
-    private val shopListener = object : ValueEventListener {
+    // Live count of orders waiting for this seller, shown as a badge on the Orders tab.
+    private val ordersBadgeListener = object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
-            binding.tvShopMeta.text =
-                if (snapshot.exists()) Shop.from(snapshot).metaLine() else "Setting up your shop…"
+            val waiting = snapshot.children.count {
+                it.child("status").getValue(String::class.java) == Order.STATUS_PENDING
+            }
+            if (waiting > 0) {
+                binding.bottomNav.getOrCreateBadge(R.id.nav_orders).number = waiting
+            } else {
+                binding.bottomNav.removeBadge(R.id.nav_orders)
+            }
         }
 
         override fun onCancelled(error: DatabaseError) { /* ignore */ }
-    }
-
-    private val productsListener = object : ValueEventListener {
-        override fun onDataChange(snapshot: DataSnapshot) {
-            val list = snapshot.children.mapNotNull { child ->
-                child.getValue(Product::class.java)?.apply { id = child.key ?: "" }
-            }
-            adapter.submitList(list)
-            val inStock = list.count { it.inStock }
-            binding.tvStatTotal.text = list.size.toString()
-            binding.tvStatIn.text = inStock.toString()
-            binding.tvStatOut.text = (list.size - inStock).toString()
-            binding.tvEmpty.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE
-        }
-
-        override fun onCancelled(error: DatabaseError) {
-            Toast.makeText(this@SellerHomeActivity, error.message, Toast.LENGTH_LONG).show()
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,38 +50,60 @@ class SellerHomeActivity : AppCompatActivity() {
         binding = ActivitySellerHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        adapter = SellerProductAdapter(
-            onEdit = { product ->
-                startActivity(
-                    Intent(this, AddEditProductActivity::class.java)
-                        .putExtra(Roles.EXTRA_PRODUCT_ID, product.id)
-                )
-            },
-            onDelete = { product -> confirmDelete(product) }
-        )
-        binding.rvProducts.layoutManager = LinearLayoutManager(this)
-        binding.rvProducts.adapter = adapter
-
-        binding.ivProfileIcon.setOnClickListener {
-            startActivity(Intent(this, ProfileActivity::class.java))
+        binding.bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_products -> { showRoot(SellerProductsFragment()); true }
+                R.id.nav_add -> { showRoot(AddEditProductFragment.newInstance(null)); true }
+                R.id.nav_orders -> { showRoot(SellerOrdersFragment()); true }
+                R.id.nav_profile -> {
+                    startActivity(Intent(this, ProfileActivity::class.java))
+                    false // keep the previous tab highlighted
+                }
+                else -> false
+            }
         }
-        binding.fabAdd.setOnClickListener {
-            startActivity(Intent(this, AddEditProductActivity::class.java))
-        }
-
-        binding.cardShopInfo.setOnClickListener {
-            startActivity(Intent(this, ShopSettingsActivity::class.java))
+        // Tapping "Products" while editing an item goes back to the product grid.
+        binding.bottomNav.setOnItemReselectedListener { item ->
+            if (item.itemId == R.id.nav_products) {
+                supportFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+            }
         }
 
-        loadProducts()
-        listenToShop()
+        // "Products" is already the selected tab, so selecting it again would not fire the listener:
+        // show the first screen directly.
+        if (savedInstanceState == null) showRoot(SellerProductsFragment())
+
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid != null) {
+            ordersQuery = FirebaseDatabase.getInstance().getReference("orders")
+                .orderByChild("shopId").equalTo(uid)
+                .also { it.addValueEventListener(ordersBadgeListener) }
+        }
     }
 
-    private fun listenToShop() {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        shopRef = FirebaseDatabase.getInstance().getReference("shops").child(uid).also {
-            it.addValueEventListener(shopListener)
-        }
+    override fun onDestroy() {
+        super.onDestroy()
+        ordersQuery?.removeEventListener(ordersBadgeListener)
+    }
+
+    private fun showRoot(fragment: Fragment) {
+        supportFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, fragment)
+            .commit()
+    }
+
+    /** Opens the editor for an existing product on top of the product grid (Back returns to the grid). */
+    fun openEditor(productId: String) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, AddEditProductFragment.newInstance(productId))
+            .addToBackStack("edit")
+            .commit()
+    }
+
+    /** Switches to a bottom-navigation tab (R.id.nav_products / nav_add / nav_orders). */
+    fun selectTab(itemId: Int) {
+        binding.bottomNav.selectedItemId = itemId
     }
 
     /** Makes sure shops/{uid} exists (default delivery info) and its name matches the account name. */
@@ -142,43 +158,10 @@ class SellerHomeActivity : AppCompatActivity() {
             })
     }
 
-    // Reload on every return so an edited name shows up after coming back from Profile.
+    // Re-sync on every return so a changed name/photo reaches the shop record after coming back from Profile.
     override fun onStart() {
         super.onStart()
-        loadUserName(binding.tvWelcome)
-        loadHeaderPhoto(binding.ivProfileIcon)
         syncShop()
         syncShopPhoto()
-    }
-
-    private fun loadProducts() {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        productsQuery = productsRef.orderByChild("sellerId").equalTo(uid).also {
-            it.addValueEventListener(productsListener)
-        }
-    }
-
-    private fun confirmDelete(product: Product) {
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Delete product")
-            .setMessage("Remove \"${product.name}\" from your shop?")
-            .setPositiveButton("Delete") { _, _ ->
-                productsRef.child(product.id).removeValue()
-            }
-            .setNegativeButton("Cancel", null)
-            .create()
-            .also { dialog ->
-                dialog.setOnShowListener {
-                    dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE)
-                        .setTextColor(getColor(R.color.danger))
-                }
-            }
-            .show()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        productsQuery?.removeEventListener(productsListener)
-        shopRef?.removeEventListener(shopListener)
     }
 }

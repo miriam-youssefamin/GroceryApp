@@ -10,7 +10,8 @@ object CartManager {
         var name: String,
         var price: Double,
         var maxQty: Int,
-        var qty: Int
+        var qty: Int,
+        var photoUrl: String = ""
     )
 
     var shopId: String? = null
@@ -36,10 +37,11 @@ object CartManager {
         shopId = shop.id
         shopName = shop.name
         deliveryFee = shop.deliveryFee
-        val line = lines.getOrPut(product.id) { Line(product.id, product.name, product.price, product.quantity, 0) }
+        val line = lines.getOrPut(product.id) { Line(product.id, product.name, product.price, product.quantity, 0, product.photoUrl) }
         line.name = product.name
         line.price = product.price
         line.maxQty = product.quantity
+        line.photoUrl = product.photoUrl
         if (line.qty >= product.quantity) return false
         line.qty++
         return true

@@ -24,6 +24,7 @@ class CartAdapter(private val onChanged: () -> Unit) : RecyclerView.Adapter<Cart
         val line = items[position]
         val b = holder.binding
         b.tvEmoji.text = productEmoji(line.name)
+        showRemoteImage(b.ivPhoto, b.tvEmoji, line.photoUrl)
         b.tvName.text = line.name
         b.tvUnit.text = "${formatMoney(line.price)} each"
         b.tvQty.text = line.qty.toString()

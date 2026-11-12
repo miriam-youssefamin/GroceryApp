@@ -71,12 +71,68 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
+                <FrameLayout
+                    android:id="@+id/photoFrame"
+                    android:layout_width="match_parent"
+                    android:layout_height="170dp"
+                    android:background="@drawable/icon_tile_background"
+                    android:clickable="true"
+                    android:clipToOutline="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:id="@+id/tvPhotoHint"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:text="📷\nTap to add a product photo"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp" />
+
+                    <ImageView
+                        android:id="@+id/ivPreview"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="Product photo preview"
+                        android:scaleType="centerCrop"
+                        android:visibility="gone" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+
+                    <Button
+                        android:id="@+id/btnCamera"
+                        style="@style/Widget.GroceryApp.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:minHeight="48dp"
+                        android:text="Camera"
+                        android:textSize="14sp" />
+
+                    <Button
+                        android:id="@+id/btnGallery"
+                        style="@style/Widget.GroceryApp.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:minHeight="48dp"
+                        android:text="Gallery"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilName"
                     style="@style/Widget.GroceryApp.TextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="0dp"
+                    android:layout_marginTop="16dp"
                     android:hint="Product name">
 
                     <com.google.android.material.textfield.TextInputEditText

@@ -32,4 +32,8 @@
         <item name="chipCornerRadius">20dp</item>
         <item name="android:textSize">14sp</item>
     </style>
+
+    <style name="Widget.GroceryApp.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/green_light</item>
+    </style>
 </resources>

@@ -63,6 +63,7 @@ class BuyerProductAdapter(
         val product = items[position]
         val b = holder.binding
         b.tvEmoji.text = productEmoji(product.name)
+        showRemoteImage(b.ivPhoto, b.tvEmoji, product.photoUrl)
         b.tvName.text = product.name
         b.tvPrice.text = "EGP %.2f".format(product.price)
         b.root.setOnClickListener { onClick?.invoke(product) }
