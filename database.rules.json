@@ -1,0 +1,69 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "shops": {
+      ".read": "auth != null",
+      "$sellerId": {
+        ".write": "auth != null && auth.uid === $sellerId",
+        "latitude": {
+          ".validate": "newData.isNumber() && newData.val() >= -90 && newData.val() <= 90"
+        },
+        "longitude": {
+          ".validate": "newData.isNumber() && newData.val() >= -180 && newData.val() <= 180"
+        },
+        "reviews": {
+          "$reviewerId": {
+            ".write": "auth != null && auth.uid === $reviewerId"
+          }
+        }
+      }
+    },
+    "products": {
+      ".read": "auth != null",
+      ".indexOn": ["sellerId"],
+      "$productId": {
+        ".write": "auth != null && ((!data.exists() && newData.child('sellerId').val() === auth.uid) || data.child('sellerId').val() === auth.uid)",
+        "quantity": {
+          ".write": "auth != null",
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "price": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        }
+      }
+    },
+    "orders": {
+      ".indexOn": ["shopId", "buyerId"],
+      ".read": "auth != null && ((query.orderByChild === 'shopId' && query.equalTo === auth.uid) || (query.orderByChild === 'buyerId' && query.equalTo === auth.uid))",
+      "$orderId": {
+        ".read": "auth != null && (data.child('shopId').val() === auth.uid || data.child('buyerId').val() === auth.uid)",
+        ".write": "auth != null && !data.exists() && newData.child('buyerId').val() === auth.uid",
+        "status": {
+          ".write": "auth != null && (data.parent().child('shopId').val() === auth.uid || (data.parent().child('buyerId').val() === auth.uid && ((data.val() === 'pending' && newData.val() === 'cancelled') || (data.val() === 'cancelled' && newData.val() === 'pending'))))",
+          ".validate": "newData.isString() && newData.val().matches(/^(pending|preparing|ready|delivering|delivered|rejected|cancelled|accepted)$/)"
+        },
+        "deliveryMethod": {
+          ".validate": "newData.val() === 'delivery' || newData.val() === 'pickup'"
+        },
+        "deliveryAddress": {
+          ".validate": "newData.isString() && (newData.parent().child('deliveryMethod').val() === 'pickup' || newData.val().length >= 10)"
+        },
+        "distanceKm": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 15"
+        },
+        "items": {
+          "$productId": {
+            "quantity": {
+              ".validate": "newData.isNumber() && newData.val() >= 1"
+            }
+          }
+        }
+      }
+    }
+  }
+}

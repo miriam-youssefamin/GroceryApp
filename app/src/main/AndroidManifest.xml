@@ -2,6 +2,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Order-status notifications ("Order is on the way", "Ready for pickup", ...) on Android 13+. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- VoIP: both phones record the microphone and send it over UDP to the IP/port the user enters. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- Delivery pricing: the seller saves the shop location, the buyer's location gives the delivery
+         spot, and the distance between the two sets the fee. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <!-- Lets the product screen check for / launch a camera app (photos are taken with the system camera,
          so no CAMERA permission is needed). -->
@@ -31,6 +39,7 @@
         <activity android:name=".BuyerHomeActivity" android:exported="false" />
         <activity android:name=".SellerHomeActivity" android:exported="false" />
         <activity android:name=".ShopSettingsActivity" android:exported="false" />
+        <activity android:name=".VoipActivity" android:exported="false" />
 
         <!-- Shares the temporary camera picture with the system camera app. -->
         <provider

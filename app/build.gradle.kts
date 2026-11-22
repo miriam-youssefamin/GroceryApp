@@ -65,5 +65,7 @@ dependencies {
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.fragment:fragment-ktx:1.8.5") // Fragments + registerForActivityResult in fragments
     implementation("com.amazonaws:aws-android-sdk-s3:2.77.0") // AWS S3 (profile + product photos)
+    implementation("androidx.viewpager2:viewpager2:1.1.0") // swipe between the tabs of the home screens
+    implementation("com.google.android.gms:play-services-location:21.3.0") // shop + buyer location for the delivery distance
 
 }

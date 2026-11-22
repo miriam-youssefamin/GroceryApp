@@ -12,10 +12,18 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
+/**
+ * Login screen for the role chosen on [RoleSelectionActivity] (buyer or seller).
+ *
+ * Flow: validate the fields → Firebase Email Authentication → read users/{uid}/role →
+ * open the matching home screen. If the account belongs to the other role, the user is
+ * signed out again and told which option to use, so a buyer can never land in the seller app.
+ */
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     private val auth = FirebaseAuth.getInstance()
+    /** The role this screen logs in as ([Roles.BUYER] or [Roles.SELLER]), passed in the intent. */
     private lateinit var role: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,6 +43,7 @@ class LoginActivity : AppCompatActivity() {
         binding.tvForgotPassword.setOnClickListener { forgotPassword() }
     }
 
+    /** Checks the email/password fields, then signs in with Firebase Authentication. */
     private fun login() {
         val email = binding.etEmail.text.toString().trim()
         val password = binding.etPassword.text.toString()
@@ -57,6 +66,7 @@ class LoginActivity : AppCompatActivity() {
             }
     }
 
+    /** Reads the role saved at sign-up and only lets the user in if it matches the role they chose. */
     private fun checkRoleAndContinue() {
         val uid = auth.currentUser!!.uid
         FirebaseDatabase.getInstance().getReference("users").child(uid).child("role")
@@ -83,6 +93,7 @@ class LoginActivity : AppCompatActivity() {
             })
     }
 
+    /** Sends Firebase's password-reset email to the address typed in the email field. */
     private fun forgotPassword() {
         val email = binding.etEmail.text.toString().trim()
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
@@ -98,6 +109,7 @@ class LoginActivity : AppCompatActivity() {
             }
     }
 
+    /** Opens the buyer or seller home and clears the back stack (Back won't return to login). */
     private fun goToHome() {
         val target = if (role == Roles.SELLER) SellerHomeActivity::class.java else BuyerHomeActivity::class.java
         startActivity(

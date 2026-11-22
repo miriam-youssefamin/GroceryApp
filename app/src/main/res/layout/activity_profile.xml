@@ -29,6 +29,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
         <Button android:id="@+id/btnSave" style="@style/Widget.GroceryApp.Button" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginStart="24dp" android:layout_marginTop="24dp" android:layout_marginEnd="24dp" android:text="Save changes"/>
+        <Button android:id="@+id/btnVoiceCall" style="@style/Widget.GroceryApp.OutlinedButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginStart="24dp" android:layout_marginTop="12dp" android:layout_marginEnd="24dp" android:text="Voice call"/>
         <Button android:id="@+id/btnLogout" style="@style/Widget.GroceryApp.OutlinedButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginStart="24dp" android:layout_marginTop="12dp" android:layout_marginEnd="24dp" android:text="Log out"/>
         <Button android:id="@+id/btnDelete" style="@style/Widget.GroceryApp.DangerButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginStart="24dp" android:layout_marginTop="12dp" android:layout_marginEnd="24dp" android:text="Delete account"/>
     </LinearLayout>

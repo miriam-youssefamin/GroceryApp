@@ -6,10 +6,15 @@ import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.groceryapp.databinding.ItemCartBinding
 
+/**
+ * One row per cart line: photo (emoji fallback), name, unit price, quantity stepper and line total.
+ * @param onChanged Called after +/- so the cart screen can update the totals and delivery fee.
+ */
 class CartAdapter(private val onChanged: () -> Unit) : RecyclerView.Adapter<CartAdapter.VH>() {
 
     private var items: List<CartManager.Line> = emptyList()
 
+    /** Replaces the rows with a fresh snapshot of the cart. */
     fun submitList(list: List<CartManager.Line>) {
         items = list
         notifyDataSetChanged()
@@ -35,6 +40,7 @@ class CartAdapter(private val onChanged: () -> Unit) : RecyclerView.Adapter<Cart
             onChanged()
         }
         b.btnPlus.setOnClickListener {
+            // Client-side stock check: refuse to go above the available quantity.
             if (!CartManager.increment(line.productId)) {
                 Toast.makeText(b.root.context, "Only ${line.maxQty} available", Toast.LENGTH_SHORT).show()
             }

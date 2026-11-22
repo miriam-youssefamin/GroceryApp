@@ -1,5 +1,6 @@
 package com.example.groceryapp
 
+/** Role names stored in users/{uid}/role, plus the intent-extra keys used to pass them between screens. */
 object Roles {
     const val BUYER = "buyer"
     const val SELLER = "seller"

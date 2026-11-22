@@ -12,6 +12,7 @@ class ShopGridAdapter(
 
     private val items = mutableListOf<Shop>()
 
+    /** Replaces the shops shown (called after filtering). */
     fun submitList(newItems: List<Shop>) {
         items.clear()
         items.addAll(newItems)

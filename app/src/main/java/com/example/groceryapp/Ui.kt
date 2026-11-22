@@ -165,4 +165,5 @@ fun fetchUserName(onResult: (String) -> Unit) {
         })
 }
 
+/** Formats an amount as "EGP 12.50". */
 fun formatMoney(value: Double): String = "EGP %.2f".format(value)

@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    VoIP call screen (Milestone 4, section 5).
+    The user types the other phone's IP address and SIP port, and their own SIP port, then taps "Call".
+    The call is set up with SIP (INVITE / 180 Ringing / 200 OK / ACK, ended with BYE) and the voice
+    travels as RTP packets (G.711 µ-law). Both phones must be on the same Wi-Fi network.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/welcome_background"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:background="@drawable/header_background">
+
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_gravity="top|start"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="56dp"
+            android:background="@drawable/avatar_background"
+            android:clickable="true"
+            android:contentDescription="Back"
+            android:focusable="true"
+            android:padding="11dp"
+            android:src="@drawable/ic_arrow_back"
+            android:tint="@color/green_dark" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|start"
+            android:layout_marginStart="24dp"
+            android:layout_marginBottom="20dp"
+            android:text="Voice call"
+            android:textColor="@color/white"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+    </FrameLayout>
+
+    <!-- Scrolls so the fields stay reachable when the keyboard is open. -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <!-- This phone's own Wi-Fi IP, so the user can tell it to the other person. -->
+            <TextView
+                android:id="@+id/tvMyIp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/info_background"
+                android:gravity="center"
+                android:padding="12dp"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:textIsSelectable="true" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="3dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Call settings"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <!-- Other phone's IP: digits and dots only. -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilRemoteIp"
+                        style="@style/Widget.GroceryApp.TextInputLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:hint="Other phone's IP address (e.g. 192.168.1.20)">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etRemoteIp"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:digits="0123456789."
+                            android:inputType="number"
+                            android:maxLength="15"
+                            android:textColor="@color/text_primary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:orientation="horizontal">
+
+                        <!-- Port the other phone listens on (where we send our voice). -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tilRemotePort"
+                            style="@style/Widget.GroceryApp.TextInputLayout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="Their SIP port">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etRemotePort"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="number"
+                                android:maxLength="5"
+                                android:textColor="@color/text_primary" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- Port this phone listens on (where we receive their voice). -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tilLocalPort"
+                            style="@style/Widget.GroceryApp.TextInputLayout"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:layout_weight="1"
+                            android:hint="My SIP port">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etLocalPort"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="number"
+                                android:maxLength="5"
+                                android:textColor="@color/text_primary" />
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Both phones must be on the same Wi-Fi and have this screen open. Use port 5060 so Wireshark decodes SIP automatically."
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <TextView
+                android:id="@+id/tvVoipStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:gravity="center"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <!-- Call / Cancel / Hang up, depending on the call state. -->
+            <Button
+                android:id="@+id/btnVoip"
+                style="@style/Widget.GroceryApp.Button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp" />
+
+            <!-- Shown only for an incoming call (INVITE received). -->
+            <LinearLayout
+                android:id="@+id/incomingRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <Button
+                    android:id="@+id/btnDecline"
+                    style="@style/Widget.GroceryApp.DangerButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Decline" />
+
+                <Button
+                    android:id="@+id/btnAnswer"
+                    style="@style/Widget.GroceryApp.Button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:text="Answer" />
+            </LinearLayout>
+
+            <!-- Live log of the SIP messages sent (→) and received (←) and RTP packet counts. -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Signaling log"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvSipLog"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/info_background"
+                android:fontFamily="monospace"
+                android:minLines="4"
+                android:padding="12dp"
+                android:textColor="@color/text_primary"
+                android:textIsSelectable="true"
+                android:textSize="12sp" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

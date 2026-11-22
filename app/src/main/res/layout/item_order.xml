@@ -65,6 +65,18 @@
             android:textColor="@color/text_primary"
             android:textSize="14sp" />
 
+        <!-- Delivery or pickup, plus the address for delivery orders (Milestone 4 checkout). -->
+        <TextView
+            android:id="@+id/tvDelivery"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/info_background"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="6dp"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -9,6 +9,13 @@ import com.example.groceryapp.databinding.ActivitySignupBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 
+/**
+ * Registration screen for a buyer or seller account.
+ *
+ * Creates the Firebase Authentication user, then immediately saves the profile
+ * (name, address, phone, email, role) to users/{uid} in the Realtime Database as JSON.
+ * For sellers the "name" field is the shop name.
+ */
 class SignUpActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySignupBinding
@@ -39,6 +46,7 @@ class SignUpActivity : AppCompatActivity() {
         binding.tvGoLogin.setOnClickListener { finish() }
     }
 
+    /** Validates every field (showing the first error under its field), then creates the account. */
     private fun signUp() {
         val name = binding.etName.text.toString().trim()
         val address = binding.etAddress.text.toString().trim()
@@ -59,6 +67,7 @@ class SignUpActivity : AppCompatActivity() {
         }
     }
 
+    /** Creates the Auth user, writes users/{uid}, then opens the home screen for the role. */
     private fun createAccount(name: String, address: String, phone: String, email: String, password: String) {
         binding.btnSignUp.isEnabled = false
         auth.createUserWithEmailAndPassword(email, password)
@@ -79,6 +88,7 @@ class SignUpActivity : AppCompatActivity() {
             .addOnFailureListener { fail(it) }
     }
 
+    /** Re-enables the button and shows Firebase's error message. */
     private fun fail(e: Exception) {
         binding.btnSignUp.isEnabled = true
         Toast.makeText(this, e.message ?: "Sign up failed", Toast.LENGTH_LONG).show()

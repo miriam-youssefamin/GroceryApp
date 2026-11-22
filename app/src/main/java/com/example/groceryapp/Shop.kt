@@ -29,7 +29,11 @@ object Categories {
     fun byKey(key: String): Category = all.firstOrNull { it.key == key } ?: all.last()
 }
 
-/** A seller's shop: shops/{sellerUid}. Ratings are computed from the reviews. */
+/**
+ * A seller's shop: shops/{sellerUid}. Ratings are computed from the reviews.
+ * [latitude]/[longitude] are set by the seller in Shop settings; they are null until then,
+ * and without them the delivery distance can't be measured (buyers can only pick up).
+ */
 data class Shop(
     var id: String = "",
     val name: String = "Shop",
@@ -37,8 +41,12 @@ data class Shop(
     val deliveryFee: Double = DEFAULT_FEE,
     val deliveryMinutes: Int = DEFAULT_MINUTES,
     val reviews: List<Review> = emptyList(),
-    val photoUrl: String = ""
+    val photoUrl: String = "",
+    val latitude: Double? = null,
+    val longitude: Double? = null
 ) {
+    val hasLocation: Boolean get() = latitude != null && longitude != null
+
     val categoryInfo: Category get() = Categories.byKey(category)
     val ratingCount: Int get() = reviews.size
     val avgRating: Double get() = if (reviews.isEmpty()) 0.0 else reviews.map { it.rating }.average()
@@ -52,7 +60,9 @@ data class Shop(
     fun ratingText(): String =
         if (ratingCount == 0) "★ New" else "★ %.1f (%d)".format(avgRating, ratingCount)
 
-    fun metaLine(): String = "${ratingText()}  ·  🕒 $deliveryMinutes min  ·  🛵 ${feeText()}"
+    /** "★ 4.5 (12)  ·  🕒 30 min  ·  🛵 from EGP 15" — the base fee; distance/rush hour can add to it at checkout. */
+    fun metaLine(): String =
+        "${ratingText()}  ·  🕒 $deliveryMinutes min  ·  🛵 ${if (deliveryFee > 0) "from " else ""}${feeText()}"
 
     companion object {
         const val DEFAULT_FEE = 15.0
@@ -69,7 +79,9 @@ data class Shop(
                 deliveryMinutes = (s.child("deliveryMinutes").value as? Number)?.toInt() ?: DEFAULT_MINUTES,
                 category = s.child("category").getValue(String::class.java) ?: "other",
                 reviews = reviews,
-                photoUrl = s.child("photoUrl").getValue(String::class.java) ?: ""
+                photoUrl = s.child("photoUrl").getValue(String::class.java) ?: "",
+                latitude = (s.child("latitude").value as? Number)?.toDouble(),
+                longitude = (s.child("longitude").value as? Number)?.toDouble()
             )
         }
     }

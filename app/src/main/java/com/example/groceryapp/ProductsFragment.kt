@@ -99,6 +99,10 @@ class ProductsFragment : Fragment() {
         refreshCart()
     }
 
+    /**
+     * Adds one unit to the cart. If the cart holds another shop's items, an alert dialog asks
+     * whether to start a new cart (one shop per cart). Shows a toast when the stock limit is reached.
+     */
     private fun addToCart(product: Product) {
         val shop = currentShop ?: return
         if (CartManager.belongsToOtherShop(shop.id)) {
@@ -119,6 +123,7 @@ class ProductsFragment : Fragment() {
         refreshCart()
     }
 
+    /** Updates the +/- counters on the cards and the floating "View cart" bar. */
     private fun refreshCart() {
         val b = _binding ?: return
         productAdapter.refresh()
@@ -128,6 +133,7 @@ class ProductsFragment : Fragment() {
         b.tvCartTotal.text = formatMoney(CartManager.subtotal())
     }
 
+    /** Fills the header with the shop's category, name, rating and delivery info. */
     private fun bindShop(shop: Shop) {
         val b = _binding ?: return
         b.tvShopCategory.text = "${shop.categoryInfo.emoji} ${shop.categoryInfo.label}"
@@ -148,6 +154,7 @@ class ProductsFragment : Fragment() {
             if (shop.reviews.any { it.userId == myUid }) "Edit your review" else "Write a review"
     }
 
+    /** Alert dialog with a star rating and comment; saved to shops/{shopId}/reviews/{buyerUid}. */
     private fun showReviewDialog() {
         val uid = myUid ?: return
         val ctx = requireContext()

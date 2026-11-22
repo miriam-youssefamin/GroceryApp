@@ -10,6 +10,10 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
+/**
+ * Launcher screen: the user picks "Buyer" or "Seller", which opens [LoginActivity] for that role.
+ * A user who is still signed in skips this screen and goes straight to their home screen.
+ */
 class RoleSelectionActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRoleSelectBinding
@@ -40,10 +44,12 @@ class RoleSelectionActivity : AppCompatActivity() {
             })
     }
 
+    /** Opens the login screen for [role]. */
     private fun goToAuth(role: String) {
         startActivity(Intent(this, LoginActivity::class.java).putExtra(Roles.EXTRA_ROLE, role))
     }
 
+    /** Opens a home screen and clears the back stack. */
     private fun goToHome(activity: Class<*>) {
         startActivity(
             Intent(this, activity)

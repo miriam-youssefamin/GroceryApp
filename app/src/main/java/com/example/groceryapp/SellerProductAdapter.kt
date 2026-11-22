@@ -14,6 +14,7 @@ class SellerProductAdapter(
 
     private val items = mutableListOf<Product>()
 
+    /** Replaces the products shown (called on every Firebase update). */
     fun submitList(newItems: List<Product>) {
         items.clear()
         items.addAll(newItems)

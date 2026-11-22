@@ -87,10 +87,12 @@ class AddEditProductFragment : Fragment() {
 
     // ---- photo ----
 
+    /** Opens the system photo picker (no storage permission needed). */
     private fun pickFromGallery() {
         pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
 
+    /** Opens the camera app; the picture is written to a FileProvider URI we own. */
     private fun launchCamera() {
         val ctx = requireContext()
         val dir = File(ctx.cacheDir, "camera").apply { mkdirs() }
@@ -104,6 +106,7 @@ class AddEditProductFragment : Fragment() {
         }
     }
 
+    /** Remembers the chosen photo (uploaded on Save) and shows a preview. */
     private fun setPicked(uri: Uri) {
         if (showPreview(uri)) {
             pendingUri = uri
@@ -125,6 +128,7 @@ class AddEditProductFragment : Fragment() {
 
     // ---- load / save ----
 
+    /** Edit mode: fills the form with the product's current values. */
     private fun loadExisting(id: String) {
         productsRef.child(id).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -146,6 +150,10 @@ class AddEditProductFragment : Fragment() {
         })
     }
 
+    /**
+     * Validates name/price/quantity; if a new photo was chosen, compresses it (< 0.5 MB) and uploads
+     * it to S3 first, then writes the product to Firebase.
+     */
     private fun save() {
         val b = binding
         val name = b.etName.text.toString().trim()
@@ -187,6 +195,7 @@ class AddEditProductFragment : Fragment() {
         }
     }
 
+    /** Saves products/{id}; on edit with a new photo, deletes the old S3 object to save bucket space. */
     private fun writeProduct(name: String, price: Double, quantity: Int, uid: String, photoUrl: String, newUpload: Boolean) {
         val ctx = requireContext().applicationContext
         val product = Product(name = name, price = price, quantity = quantity, sellerId = uid, photoUrl = photoUrl)
@@ -208,13 +217,32 @@ class AddEditProductFragment : Fragment() {
             }
     }
 
+    /** Confirms the save and returns to the products grid. */
     private fun onSaved() {
         if (editingId != null) {
             parentFragmentManager.popBackStack()
         } else {
-            // Added a new item: show it in the product grid.
+            // Added a new item: the "Add" tab is a swipe page that stays alive, so empty the form
+            // for the next product, then show the new item in the product grid.
+            resetForm()
             (requireActivity() as SellerHomeActivity).selectTab(R.id.nav_products)
         }
+    }
+
+    /** Clears every field and the photo so the "Add" page is ready for another product. */
+    private fun resetForm() {
+        val b = _binding ?: return
+        pendingUri = null
+        cameraUri = null
+        existingPhotoUrl = ""
+        listOf(b.etName, b.etPrice, b.etQuantity).forEach { it.setText("") }
+        listOf(b.tilName, b.tilPrice, b.tilQuantity).forEach { it.error = null }
+        b.ivPreview.tag = null
+        b.ivPreview.setImageDrawable(null)
+        b.ivPreview.visibility = View.GONE
+        b.tvPhotoHint.visibility = View.VISIBLE
+        b.btnSave.isEnabled = true
+        b.btnSave.text = "Save product"
     }
 
     override fun onDestroyView() {

@@ -23,16 +23,19 @@ class BuyerProductAdapter(
     /** Number of products before search/filter is applied. */
     val totalCount: Int get() = all.size
 
+    /** Sets the full product list; the search/stock filters are applied on top of it. */
     fun submitList(newItems: List<Product>) {
         all = newItems
         applyFilters()
     }
 
+    /** Filters by product name (case-insensitive). */
     fun setQuery(q: String) {
         query = q.trim()
         applyFilters()
     }
 
+    /** Hides out-of-stock products when [value] is true. */
     fun setInStockOnly(value: Boolean) {
         inStockOnly = value
         applyFilters()
@@ -41,6 +44,7 @@ class BuyerProductAdapter(
     /** Re-draws the cards (e.g. after the cart changed). */
     fun refresh() = notifyDataSetChanged()
 
+    /** Rebuilds the visible list from the full list + current filters. */
     private fun applyFilters() {
         items.clear()
         items.addAll(all.filter {

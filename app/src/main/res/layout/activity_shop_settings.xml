@@ -93,7 +93,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="0dp"
-                    android:hint="Delivery fee (EGP, 0 for free)">
+                    android:hint="Base delivery fee (EGP, 0 for free)">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etFee"
@@ -117,6 +117,42 @@
                         android:inputType="number"
                         android:textColor="@color/text_primary" />
                 </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Shop location: the starting point of every delivery distance. -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Shop location"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvShopLocation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="📍 Not set. Buyers can only pick up until you set it."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="13sp" />
+
+                <Button
+                    android:id="@+id/btnSetLocation"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="📍 Use my current location"
+                    android:textAllCaps="false" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Tap this while you are at your shop. Delivery fees are calculated from this point."
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp" />
 
                 <TextView
                     android:layout_width="wrap_content"

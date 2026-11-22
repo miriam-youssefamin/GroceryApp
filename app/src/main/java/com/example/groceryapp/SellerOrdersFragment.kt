@@ -16,21 +16,33 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.Query
 import com.google.firebase.database.ValueEventListener
 
-/** Seller "Orders" tab: every order placed with this shop, live, newest first, with Accept / Reject for pending ones. */
+/**
+ * Seller "Orders" tab: every order placed with this shop, live (Firebase listener), newest first.
+ *
+ * Pending orders get Accept / Reject; accepted orders get a button for the next step
+ * (Preparing → Ready for pickup / Delivering → Delivered). All status changes go through
+ * [OrderRepository], which uses transactions so an order can't be handled twice.
+ */
 class SellerOrdersFragment : Fragment() {
 
     private var _binding: FragmentSellerOrdersBinding? = null
     private val binding get() = _binding!!
 
+    // Kept so the listener can be removed in onDestroyView (avoids leaks and updates to a dead view).
     private var ordersQuery: Query? = null
 
     private val adapter = SellerOrderAdapter(
         onAccept = { order ->
             OrderRepository.accept(order) { changed -> if (!changed) notifyAlreadyHandled() }
         },
-        onReject = { order -> confirmReject(order) }
+        onReject = { order -> confirmReject(order) },
+        // Preparing → Ready for pickup / Delivering → Delivered
+        onAdvance = { order ->
+            OrderRepository.advance(order) { changed -> if (!changed) notifyAlreadyHandled() }
+        }
     )
 
+    /** Rebuilds the list and the "N orders waiting" summary whenever any order of this shop changes. */
     private val ordersListener = object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
             val b = _binding ?: return
@@ -62,12 +74,14 @@ class SellerOrdersFragment : Fragment() {
         binding.rvOrders.layoutManager = LinearLayoutManager(requireContext())
         binding.rvOrders.adapter = adapter
 
+        // The shop id is the seller's uid, so this query returns exactly this shop's orders.
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         ordersQuery = FirebaseDatabase.getInstance().getReference("orders")
             .orderByChild("shopId").equalTo(uid)
             .also { it.addValueEventListener(ordersListener) }
     }
 
+    /** Alert dialog before rejecting (rejecting puts the items back into stock). */
     private fun confirmReject(order: Order) {
         val ctx = requireContext()
         MaterialAlertDialogBuilder(ctx)
@@ -87,8 +101,15 @@ class SellerOrdersFragment : Fragment() {
             .show()
     }
 
+    /**
+     * The status change didn't go through. If Firebase sent an error (e.g. "Permission denied"
+     * from the database rules), show it; otherwise someone (e.g. the buyer cancelling) changed
+     * the order first.
+     */
     private fun notifyAlreadyHandled() {
-        context?.let { Toast.makeText(it, "This order was already handled", Toast.LENGTH_SHORT).show() }
+        val error = OrderRepository.lastStatusError
+        val message = if (error != null) "Couldn't update the order: $error" else "This order was already handled"
+        context?.let { Toast.makeText(it, message, Toast.LENGTH_LONG).show() }
     }
 
     override fun onDestroyView() {

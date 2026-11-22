@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.groceryapp.databinding.FragmentShopsBinding
 import com.google.android.material.chip.Chip
@@ -78,8 +79,10 @@ class ShopsFragment : Fragment() {
 
         shopsRef.addValueEventListener(shopsListener)
         productsRef.addValueEventListener(productsListener)
+        parentFragmentManager.addOnBackStackChangedListener(overlayListener)
     }
 
+    /** Creates the filter chips: All, Top rated, Free delivery, and one chip per shop category. */
     private fun setupChips() {
         val options = listOf("all" to "All", "top" to "⭐ Top rated", "free" to "🛵 Free delivery") +
                 Categories.all.map { it.key to "${it.emoji} ${it.label}" }
@@ -97,6 +100,7 @@ class ShopsFragment : Fragment() {
         }
     }
 
+    /** Shows the number of items in the cart on the header button. */
     private fun updateCartBadge() {
         val b = _binding ?: return
         val count = CartManager.totalCount()
@@ -131,6 +135,18 @@ class ShopsFragment : Fragment() {
         b.tvEmpty.visibility = if (visible.isEmpty()) View.VISIBLE else View.GONE
     }
 
+    /**
+     * The shop page opens in an overlay above the swipe pager, so this fragment stays resumed
+     * underneath it. Listening to the back stack lets the cart badge update when the overlay closes.
+     */
+    private val overlayListener = FragmentManager.OnBackStackChangedListener { updateCartBadge() }
+
+    // Becomes the visible swipe page again -> the cart may have changed on another page.
+    override fun onResume() {
+        super.onResume()
+        updateCartBadge()
+    }
+
     // Reload on every return so an edited name/photo shows up after coming back from Profile.
     override fun onStart() {
         super.onStart()
@@ -142,6 +158,7 @@ class ShopsFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        parentFragmentManager.removeOnBackStackChangedListener(overlayListener)
         shopsRef.removeEventListener(shopsListener)
         productsRef.removeEventListener(productsListener)
         _binding = null

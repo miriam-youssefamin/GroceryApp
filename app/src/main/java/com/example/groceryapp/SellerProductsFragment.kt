@@ -97,6 +97,7 @@ class SellerProductsFragment : Fragment() {
         host.loadHeaderPhoto(binding.ivProfileIcon)
     }
 
+    /** Alert dialog before deleting a product; also deletes its photo from S3. */
     private fun confirmDelete(product: Product) {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle("Delete product")

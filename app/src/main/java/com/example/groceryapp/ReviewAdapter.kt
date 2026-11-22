@@ -9,11 +9,13 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/** One row per shop review: initial avatar, name, date, 1–5 stars and the comment (hidden if empty). */
 class ReviewAdapter : RecyclerView.Adapter<ReviewAdapter.VH>() {
 
     private val items = mutableListOf<Review>()
     private val dateFormat = SimpleDateFormat("d MMM yyyy", Locale.getDefault())
 
+    /** Replaces the reviews shown. */
     fun submitList(newItems: List<Review>) {
         items.clear()
         items.addAll(newItems)
@@ -31,6 +33,7 @@ class ReviewAdapter : RecyclerView.Adapter<ReviewAdapter.VH>() {
         b.tvAvatar.text = r.userName.firstOrNull()?.uppercase() ?: "?"
         b.tvUser.text = r.userName.ifBlank { "Customer" }
         b.tvDate.text = if (r.timestamp > 0) dateFormat.format(Date(r.timestamp)) else ""
+        // e.g. rating 4 -> "★★★★☆"
         b.tvStars.text = "★".repeat(r.rating.coerceIn(0, 5)) + "☆".repeat(5 - r.rating.coerceIn(0, 5))
         b.tvComment.text = r.comment
         b.tvComment.visibility = if (r.comment.isBlank()) View.GONE else View.VISIBLE
